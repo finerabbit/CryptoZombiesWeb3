@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CryptoZombies front-end</title>
+	<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="cryptozombies_abi.js"></script>
+</head>
+<body>
+  <div id="txStatus"></div>
+  <div id="zombies"></div>
+
+	<script>
+		var cryptoZombies;
+    var userAccount;
+    var userAccount1;
+
+    window.addEventListener('load', async () => {
+      // Modern dapp browsers...
+      if (window.ethereum) {
+        window.web3 = new Web3(ethereum);
+        try {
+          await ethereum.enable();
+          startApp();
+        } catch (error) {
+          // User denied account access...
+        }
+      }
+      // Legacy dapp browsers...
+      else if (window.web3) {
+        window.web3 = new Web3(web3.currentProvider);
+        // Acccounts always exposed
+        web3.eth.sendTransaction({/* ... */});
+      }
+      // Non-dapp browsers...
+      else {
+        console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+      }
+    });
+
+		async function startApp() {
+			var cryptoZombiesAddress = "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d";  // for main net from author.
+      //var cryptoZombiesAddress = "0xBa91f8b2bee63Ce05390f9e32c877D27E982cee9";  // for goerli test network from me. contract deployer address is 0x97c7ce63299EE389C3f73C44C56f3E0C3aB48D25.
+			cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
+      /*var accountInterval = setInterval(async function() {
+        // Check if account has changed
+        let accounts = await web3.eth.getAccounts();
+        if (accounts[0] !== userAccount) {
+          userAccount = accounts[0];
+          console.log(userAccount);
+          // Call some function to update the UI with the new account
+          getZombiesByOwner(userAccount).then(displayZombies);
+        }
+      }, 100);*/
+      //console.log(cryptoZombies);
+      //getHelloWorld().then(displayMessage);
+      let accounts = await web3.eth.getAccounts();
+      userAccount = accounts[0];
+      //userAccount1 = "0x47088b0D774F27d75C8cbaf4fBfD59aed34fAe19";
+      //transferFrom(0);
+      //levelUp(0);
+      //console.log(userAccount);
+      //createRandomZombie("lucky");
+      //attack(0, 1);
+      web3.eth.getBlockNumber().then(console.log);
+/*
+      cryptoZombies.getPastEvents("NewZombie", { fromBlock: 0, toBlock: "latest" })
+      .then(function(events) {
+        for (event of events) {
+          let zombie = event.returnValues;
+          // We can access this event's 3 return values on the `event.returnValues` object:
+          console.log("A new zombie was born!", zombie.zombieId, zombie.name, zombie.dna);
+        }
+      });
+*/
+		}
+
+    function displayMessage(msg) {
+      $("#zombies").empty();
+          $("#zombies").append(`<div class="zombie">
+            <ul>
+              <li>Name: ${msg}</li>
+            </ul>
+          </div>`);
+    }
+
+    function displayZombies(ids) {
+      $("#zombies").empty();
+      for (id of ids) {
+        // Look up zombie details from our contract. Returns a `zombie` object
+        getZombieDetails(id)
+        .then(function(zombie) {
+          // Using ES6's "template literals" to inject variables into the HTML.
+          // Append each one to our #zombies div
+          $("#zombies").append(`<div class="zombie">
+            <ul>
+              <li>Name: ${zombie.name}</li>
+              <li>ID: ${id}</li>
+              <li>DNA: ${zombie.dna}</li>
+              <li>Level: ${zombie.level}</li>
+              <li>Wins: ${zombie.winCount}</li>
+              <li>Losses: ${zombie.lossCount}</li>
+              <li>Ready Time: ${zombie.readyTime}</li>
+            </ul>
+          </div>`);
+        });
+      }
+    }
+
+		function getZombieDetails(id) {
+      return cryptoZombies.methods.zombies(id).call();
+  	}
+
+    function zombieToOwner(id) {
+      return cryptoZombies.methods.zombieToOwner(id).call();
+  	}
+
+    function getZombiesByOwner(owner) {
+      return cryptoZombies.methods.getZombiesByOwner(owner).call();
+    }
+    
+    function getHelloWorld() {
+      return cryptoZombies.methods.HelloWorld().call();
+    }
+
+    function createRandomZombie(name) {
+      // This is going to take a while, so update the UI to let the user know
+      // the transaction has been sent
+      $("#txStatus").text("Creating new zombie on the blockchain. This may take a while...");
+      // Send the tx to our contract:
+      return cryptoZombies.methods.createRandomZombie(name)
+      .send({ from: userAccount })
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Successfully created " + name + "!");
+        // Transaction was accepted into the blockchain, let's redraw the UI
+        getZombiesByOwner(userAccount).then(displayZombies);
+      })
+      .on("error", function(error) {
+        // Do something to alert the user their transaction has failed
+        $("#txStatus").text(error);
+      });
+    }
+
+    function levelUp(zombieId) {
+      $("#txStatus").text("Leveling up your zombie...");
+      return cryptoZombies.methods.levelUp(zombieId)
+      .send({ from: userAccount, value: web3.utils.toWei("0.001", "ether") })
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Power overwhelming! Zombie successfully leveled up");
+      })
+      .on("error", function(error) {
+        $("#txStatus").text(error);
+      });
+    }
+
+    function attack(zombieId, targetId) {
+      $("#txStatus").text("Attacking target zombie...");
+      return cryptoZombies.methods.attack(zombieId, targetId)
+      .send({ from: userAccount})
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Attack is successed.");
+        //getZombiesByOwner(userAccount).then(displayZombies);
+      })
+      .on("error", function(error) {
+        $("#txStatus").text(error);
+      });
+    }
+
+    function transferFrom(tokenId) {
+      $("#txStatus").text("Transfering your zombie...");
+      return cryptoZombies.methods.transferFrom(userAccount, userAccount1, tokenId)
+      .send({ from: userAccount })
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Transfered your zombie to other.");
+      })
+      .on("error", function(error) {
+        $("#txStatus").text(error);
+      });
+    }
+
+	</script>
+</body>
+</html>
