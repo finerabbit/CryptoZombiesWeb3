@@ -5,7 +5,9 @@
 	<title>CryptoZombies front-end</title>
 	<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="cryptozombies_abi.js"></script>
+  <script language="javascript" type="text/javascript" src="cryptozombies_abi.js"></script>
+  <!-- <script language="javascript" type="text/javascript" src="r.js"></script> -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
   <div id="txStatus"></div>
@@ -40,8 +42,10 @@
     });
 
 		async function startApp() {
+      //var cryptoZombiesAddress = 0xa16c3260d4d5670D27bE37a78B940C50dFf337AD // caller contract for goerli.
+      //0x32D6d0808a008bDa3eD38bff9b125c49468E9c34 // eth price oracle contract for goerli.
 			//var cryptoZombiesAddress = "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d";  // for main net from author.
-      var cryptoZombiesAddress = "0xBa91f8b2bee63Ce05390f9e32c877D27E982cee9";  // for goerli test network from me. contract deployer address is 0x97c7ce63299EE389C3f73C44C56f3E0C3aB48D25.
+      var cryptoZombiesAddress = "0xBa91f8b2bee63Ce05390f9e32c877D27E982cee9";  // CryptoZombies contract for goerli test network from me. contract deployer address is 0x97c7ce63299EE389C3f73C44C56f3E0C3aB48D25.
 			cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
       /*var accountInterval = setInterval(async function() {
         // Check if account has changed
@@ -59,7 +63,7 @@
       userAccount = accounts[0];
       //userAccount1 = "0x47088b0D774F27d75C8cbaf4fBfD59aed34fAe19";
       //transferFrom(0);
-      levelUp(0);
+      //levelUp(0);
       //console.log(userAccount);
       //createRandomZombie("lucky");
       //attack(0, 1);
@@ -74,7 +78,21 @@
         }
       });
 */
+      let ethPrice = await retrieveLatestEthPrice();
+      console.log(ethPrice);
 		}
+
+    async function retrieveLatestEthPrice() {
+      //const axios = require('axios');
+      const resp = await axios({
+          url: 'https://api.binance.com/api/v3/ticker/price',
+          params: {
+              symbol: 'ETHUSDT'
+          },
+          method: 'get'
+      });
+      return resp.data.price;
+    }
 
     function displayMessage(msg) {
       $("#zombies").empty();
