@@ -14,7 +14,9 @@
   <div id="zombies"></div>
 
 	<script>
-		var cryptoZombies;
+    var cryptoZombies;
+    var callerContract;
+    var ethPriceOracle;
     var userAccount;
     var userAccount1;
 
@@ -42,11 +44,13 @@
     });
 
 		async function startApp() {
-      //var cryptoZombiesAddress = 0xa16c3260d4d5670D27bE37a78B940C50dFf337AD // caller contract for goerli.
-      //var cryptoZombiesAddress = 0x32D6d0808a008bDa3eD38bff9b125c49468E9c34 // eth price oracle contract for goerli.
+      var callerContractAddress = "0xb4f696ADCbF743C7Aa11F4dAa4bD02Bd08A7FAcF";//"0x93846C779678e2F6CE6795D44481729e8087d19d";//"0x24f401F5969447f45DAa37A148cEC60417AC15d4"; //"0xa16c3260d4d5670D27bE37a78B940C50dFf337AD"; // old caller contract for goerli.
+      var ethPriceOracleAddress = "0x7ae75FdD700dCeF0fD628035964e4700aF3135E4";//"0x1f76f1717D24FA774CE94159eb23E0a0D670F7aD";//"0xa6c96dEBA1446b45548A6c7c58A8873cddA50eA8"; //"0x32D6d0808a008bDa3eD38bff9b125c49468E9c34"; // old eth price oracle contract for goerli.
 			//var cryptoZombiesAddress = "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d";  // for main net from author.
       var cryptoZombiesAddress = "0xBa91f8b2bee63Ce05390f9e32c877D27E982cee9";  // CryptoZombies contract for goerli test network from me. contract deployer address is 0x97c7ce63299EE389C3f73C44C56f3E0C3aB48D25.
-			cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
+      cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
+      callerContract = new web3.eth.Contract(callerContractABI, callerContractAddress);
+      ethPriceOracle = new web3.eth.Contract(ethPriceOracleABI, ethPriceOracleAddress);
       /*var accountInterval = setInterval(async function() {
         // Check if account has changed
         let accounts = await web3.eth.getAccounts();
@@ -78,6 +82,40 @@
         }
       });
 */
+/*
+      callerContract.getPastEvents("newOracleAddressEvent", { fromBlock: 0, toBlock: "latest" })
+      .then(function(events) {
+        for (event of events) {
+          let caller = event.returnValues;
+          // We can access this event's 3 return values on the `event.returnValues` object:
+          console.log("A new oracleContract address is ", caller.oracleAddress);
+        }
+        //console.log(events);
+      });
+*/
+      //updateEthPrice();
+      //setOracleInstanceAdddress();
+      
+      callerContract.getPastEvents("allEvents", { fromBlock: 0, toBlock: "latest" })
+      .then(function(events) {
+        for (event of events) {
+          let caller = event.returnValues;
+          // We can access this event's 3 return values on the `event.returnValues` object:
+          console.log("A new caller price request id is ", caller.id);
+        }
+        console.log(events);
+      });
+
+      ethPriceOracle.getPastEvents("allEvents", { fromBlock: 0, toBlock: "latest" })
+      .then(function(events) {
+        for (event of events) {
+          let caller = event.returnValues;
+          // We can access this event's 3 return values on the `event.returnValues` object:
+          console.log("A new caller price request id is ", caller.id);
+        }
+        console.log(events);
+      });
+
       let ethPrice = await retrieveLatestEthPrice();
       console.log(ethPrice);
 		}
@@ -191,6 +229,30 @@
       .send({ from: userAccount })
       .on("receipt", function(receipt) {
         $("#txStatus").text("Transfered your zombie to other.");
+      })
+      .on("error", function(error) {
+        $("#txStatus").text(error);
+      });
+    }
+
+    function updateEthPrice() {
+      $("#txStatus").text("Updating Ether price...");
+      return callerContract.methods.updateEthPrice()
+      .send({ from: userAccount })
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Ether price is successfully updated!");
+      })
+      .on("error", function(error) {
+        $("#txStatus").text(error);
+      });
+    }
+
+    function setOracleInstanceAdddress() {
+      $("#txStatus").text("Setting Oracle address...");
+      return callerContract.methods.setOracleInstanceAdddress("0x1f76f1717D24FA774CE94159eb23E0a0D670F7aD")
+      .send({ from: userAccount })
+      .on("receipt", function(receipt) {
+        $("#txStatus").text("Oracle address is successfully set!");
       })
       .on("error", function(error) {
         $("#txStatus").text(error);
