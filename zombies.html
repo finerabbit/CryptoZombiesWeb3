@@ -122,8 +122,18 @@
 
       let ethPrice = await retrieveLatestEthPrice();
       console.log(ethPrice);
-		}
 */
+      kovanDaiFaucet.getPastEvents("allEvents", { fromBlock: 0, toBlock: "latest" })
+      .then(function(events) {
+        for (event of events) {
+          let caller = event.returnValues;
+          // We can access this event's 3 return values on the `event.returnValues` object:
+          console.log("A new caller price request id is ", caller.id);
+        }
+        console.log(events);
+      });
+		}
+
     async function retrieveLatestEthPrice() {
       //const axios = require('axios');
       const resp = await axios({
