@@ -17,6 +17,7 @@
     var cryptoZombies;
     var callerContract;
     var ethPriceOracle;
+    var kovanDaiFaucet;
     var userAccount;
     var userAccount1;
 
@@ -44,6 +45,7 @@
     });
 
 		async function startApp() {
+      var kovanDaiFaucetAddress = "0x50258933a7ec64890D9a95d80cE8c237f9AFc5DC";// for kovan test net;
       var callerContractAddress = "0xa1C892E41036D2ce90f294305383B8f4165226B6";//"0xb4f696ADCbF743C7Aa11F4dAa4bD02Bd08A7FAcF";//"0x93846C779678e2F6CE6795D44481729e8087d19d";//"0x24f401F5969447f45DAa37A148cEC60417AC15d4"; //"0xa16c3260d4d5670D27bE37a78B940C50dFf337AD"; // old caller contract for goerli.
       var ethPriceOracleAddress = "0x713D302622aA372F5D3c3d22E8d5E69a5D190943";//"0x7ae75FdD700dCeF0fD628035964e4700aF3135E4";//"0x1f76f1717D24FA774CE94159eb23E0a0D670F7aD";//"0xa6c96dEBA1446b45548A6c7c58A8873cddA50eA8"; //"0x32D6d0808a008bDa3eD38bff9b125c49468E9c34"; // old eth price oracle contract for goerli.
 			//var cryptoZombiesAddress = "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d";  // for main net from author.
@@ -51,6 +53,7 @@
       cryptoZombies = new web3.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
       callerContract = new web3.eth.Contract(callerContractABI, callerContractAddress);
       ethPriceOracle = new web3.eth.Contract(ethPriceOracleABI, ethPriceOracleAddress);
+      kovanDaiFaucet = new web3.eth.Contract(kovanDaiFaucetABI, kovanDaiFaucetAddress);
       /*var accountInterval = setInterval(async function() {
         // Check if account has changed
         let accounts = await web3.eth.getAccounts();
@@ -95,7 +98,8 @@
 */
       //updateEthPrice();
       //setOracleInstanceAdddress();
-      
+/*      
+      // This is oracle contract test part.
       callerContract.getPastEvents("allEvents", { fromBlock: 0, toBlock: "latest" })
       .then(function(events) {
         for (event of events) {
@@ -119,7 +123,7 @@
       let ethPrice = await retrieveLatestEthPrice();
       console.log(ethPrice);
 		}
-
+*/
     async function retrieveLatestEthPrice() {
       //const axios = require('axios');
       const resp = await axios({
