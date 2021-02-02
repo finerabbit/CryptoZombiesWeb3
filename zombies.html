@@ -123,6 +123,7 @@
       let ethPrice = await retrieveLatestEthPrice();
       console.log(ethPrice);
 */
+      
       kovanDaiFaucet.getPastEvents("allEvents", { fromBlock: 0, toBlock: "latest" })
       .then(function(events) {
         for (event of events) {
